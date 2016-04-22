@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--Holds options for the sorting spinner on the main activity-->
+    <string-array name="sort_options">
+        <item>@string/popular_sort</item>
+        <item>@string/ratings_sort</item>
+    </string-array>
+
+</resources>

@@ -1,0 +1,25 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!--App text sizes-->
+    <dimen name="large_textsize">22sp</dimen>
+    <dimen name="medium_textsize">18sp</dimen>
+    <dimen name="medsmall_textsize">16sp</dimen>
+    <dimen name="small_textsize">14sp</dimen>
+
+    <!--Dimensions related to the detail Activity-->
+    <dimen name="detail_activity_simple_textview_padding">5dp</dimen>
+    <dimen name="detail_activity_major_padding">20dp</dimen>
+    <dimen name="detail_activity_details_top_margin">10dp</dimen>
+    <dimen name="detail_activity_image_left_margin">20dp</dimen>
+    <dimen name="detail_activity_details_left_margin">30dp</dimen>
+    <dimen name="detail_activity_movie_poster_width">130dp</dimen>
+
+    <!--Column Width on main activity-->
+    <dimen name="main_grid_column_width">120dp</dimen>
+
+    <!--Custom spinner item padding-->
+    <dimen name="spinner_item_padding">15dp</dimen>
+</resources>

@@ -1,0 +1,85 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context="com.example.android.popularmovies.MovieDetailFragment"
+        tools:showIn="@layout/activity_movie_detail">
+
+        <TextView
+            android:id="@+id/movie_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/holo_blue_bright"
+            android:padding="@dimen/detail_activity_major_padding"
+            android:text="@string/movie_title"
+            android:textSize="@dimen/large_textsize"
+            android:textColor="@android:color/white"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/detail_activity_details_top_margin">
+
+            <ImageView
+                android:id="@+id/movie_poster"
+                android:layout_width="@dimen/detail_activity_movie_poster_width"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/movie_poster"
+                android:layout_marginStart="@dimen/detail_activity_image_left_margin"
+                android:layout_marginLeft="@dimen/detail_activity_image_left_margin"
+                android:layout_gravity="center"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginLeft="@dimen/detail_activity_details_left_margin"
+                android:layout_marginStart="@dimen/detail_activity_details_left_margin">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/release_date_title"
+                    android:padding="@dimen/detail_activity_simple_textview_padding"
+                    android:textSize="@dimen/medium_textsize"/>
+                <TextView
+                    android:id="@+id/movie_release_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/release_date_content"
+                    android:padding="@dimen/detail_activity_simple_textview_padding"
+                    android:textSize="@dimen/medsmall_textsize"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/movie_rating_title"
+                    android:padding="@dimen/detail_activity_simple_textview_padding"
+                    android:textSize="@dimen/medium_textsize"/>
+                <TextView
+                    android:id="@+id/movie_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/movie_rating_content"
+                    android:padding="@dimen/detail_activity_simple_textview_padding"
+                    android:textSize="@dimen/medsmall_textsize"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/movie_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/movie_description_content"
+            android:padding="@dimen/detail_activity_major_padding"
+            android:textSize="@dimen/small_textsize"/>
+
+    </LinearLayout>
+</ScrollView>

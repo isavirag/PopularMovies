@@ -1,0 +1,27 @@
+<resources xmlns:xliff="http://schemas.android.com/tools">
+
+    <!--App Bar Titles-->
+    <string name="app_name">Popular Movies</string>
+    <string name="title_activity_movie_detail">Movie Details</string>
+
+    <!--Spinner for sorting-->
+    <string name="action_sort">Sort</string>
+
+    <!--Sorting spinner dropdown options-->
+    <string name="popular_sort">Most Popular</string>
+    <string name="ratings_sort">Best Rating</string>
+
+    <!--Movie Detail textviews-->
+    <string name="movie_title">Title</string>
+    <string name="movie_poster">Movie Poster</string>
+    <string name="release_date_title">Released:</string>
+    <string name="release_date_content">Release Date</string>
+    <string name="movie_rating_title">Rating:</string>
+    <string name="movie_rating_content">Rating</string>
+    <string name="movie_description_content">Description</string>
+
+    <!--Format for printing out the movie rating i.e. 7.50/10-->
+    <string name="movie_rating_fraction"><xliff:g id="movie_rating_value" example="7.5">%.2f</xliff:g>/10</string>
+
+
+</resources>

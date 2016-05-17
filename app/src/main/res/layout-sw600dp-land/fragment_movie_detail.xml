@@ -8,11 +8,21 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <LinearLayout
+        android:id="@+id/details_all_linearlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/detail_activity_med_large_padding"
         android:orientation="vertical"
         tools:context="com.example.android.popularmovies.MovieDetailFragment"
         tools:showIn="@layout/activity_movie_detail">
+
+        <TextView
+            android:id="@+id/title_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/detail_activity_medium_padding"
+            android:textSize="@dimen/xtra_large_textsize"
+            android:textStyle="bold"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -48,7 +58,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="@dimen/detail_activity_simple_textview_padding"
-                    android:text="@string/release_date_content"
                     android:textSize="@dimen/medsmall_textsize"/>
 
                 <TextView
@@ -63,8 +72,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="@dimen/detail_activity_simple_textview_padding"
-                    android:text="@string/movie_rating_content"
                     android:textSize="@dimen/medsmall_textsize"/>
+
+                <Button
+                    android:id="@+id/favorite_button"
+                    android:layout_width="@dimen/favorite_button_side_size"
+                    android:layout_height="@dimen/favorite_button_side_size"
+                    android:layout_gravity="start"
+                    android:layout_marginLeft="@dimen/detail_activity_medium_padding"
+                    android:layout_marginStart="@dimen/detail_activity_medium_padding"
+                    android:layout_marginTop="@dimen/detail_activity_medium_padding"
+                    android:background="@drawable/plus_button_grey"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -81,17 +99,17 @@
             android:textSize="@dimen/medium_textsize"
             android:textStyle="bold"/>
 
+
         <TextView
             android:id="@+id/movie_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/detail_activity_medium_padding"
-            android:text="@string/movie_description_content"
             android:textSize="@dimen/small_textsize"/>
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="@dimen/line_decoration_thick"
+            android:layout_height="5dp"
             android:layout_marginLeft="@dimen/line_decoration_margin_med"
             android:layout_marginRight="@dimen/line_decoration_margin_med"
             android:layout_marginTop="@dimen/line_decoration_margin_med_large"
@@ -107,10 +125,10 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/trailer_recycler_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/detail_activity_medium_padding"
-            android:clipToPadding="false"
+            android:clipToPadding="true"
             android:scrollbars="none"/>
 
         <View
@@ -143,7 +161,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clipToPadding="false"
-            android:scrollbars="vertical"/>
-
+            android:scrollbars="vertical"
+            android:paddingBottom="@dimen/detail_activity_major_padding"/>
     </LinearLayout>
 </android.support.v4.widget.NestedScrollView>

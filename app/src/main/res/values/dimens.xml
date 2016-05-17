@@ -4,6 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!--App text sizes-->
+    <dimen name="xtra_large_textsize">26sp</dimen>
     <dimen name="large_textsize">22sp</dimen>
     <dimen name="medium_textsize">18sp</dimen>
     <dimen name="medsmall_textsize">16sp</dimen>
@@ -12,14 +13,36 @@
     <!--Dimensions related to the detail Activity-->
     <dimen name="detail_activity_simple_textview_padding">5dp</dimen>
     <dimen name="detail_activity_major_padding">20dp</dimen>
-    <dimen name="detail_activity_details_top_margin">10dp</dimen>
+    <dimen name="detail_activity_med_large_padding">15dp</dimen>
+    <dimen name="detail_activity_medium_padding">10dp</dimen>
     <dimen name="detail_activity_image_left_margin">20dp</dimen>
     <dimen name="detail_activity_details_left_margin">30dp</dimen>
-    <dimen name="detail_activity_movie_poster_width">130dp</dimen>
+    <dimen name="detail_activity_movie_poster_width">180dp</dimen>
 
     <!--Column Width on main activity-->
     <dimen name="main_grid_column_width">120dp</dimen>
 
-    <!--Custom spinner item padding-->
+    <!--spinner item-->
     <dimen name="spinner_item_padding">15dp</dimen>
+    <dimen name="spinner_item_text_size">16sp</dimen>
+
+    <!--Favorite Button Size square-->
+    <dimen name="favorite_button_side_size">40dp</dimen>
+
+    <!--Custom view - line decoration-->
+    <dimen name="line_decoration_thick">5dp</dimen>
+    <dimen name="line_decoration_thin">1dp</dimen>
+    <dimen name="line_decoration_margin_large">10dp</dimen>
+    <dimen name="line_decoration_margin_med_large">8dp</dimen>
+    <dimen name="line_decoration_margin_med">5dp</dimen>
+
+    <!--Trailer Card and imageview-->
+    <dimen name="trailer_card_width">180dp</dimen>
+    <dimen name="trailer_card_height">135dp</dimen>
+    <dimen name="trailer_card_margin">5dp</dimen>
+    <dimen name="trailer_image_height">180dp</dimen>
+    <dimen name="trailer_image_width">135dp</dimen>
+    <dimen name="trailer_image_padding">5dp</dimen>
+    <dimen name="play_icon_height">50dp</dimen>
+
 </resources>

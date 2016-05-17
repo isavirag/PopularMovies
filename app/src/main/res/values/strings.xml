@@ -9,7 +9,8 @@
 
     <!--Sorting spinner dropdown options-->
     <string name="popular_sort">Most Popular</string>
-    <string name="ratings_sort">Best Rating</string>
+    <string name="ratings_sort">Best Rated</string>
+    <string name="favorites_sort">Favorites</string>
 
     <!--Movie Detail textviews-->
     <string name="movie_title">Title</string>
@@ -21,7 +22,16 @@
     <string name="movie_description_content">Description</string>
 
     <!--Format for printing out the movie rating i.e. 7.50/10-->
-    <string name="movie_rating_fraction"><xliff:g id="movie_rating_value" example="7.5">%.2f</xliff:g>/10</string>
+    <string name="movie_rating_fraction"><xliff:g>%.2f</xliff:g>/10</string>
+
+    <string name="content_authority">com.example.android.popularmovies</string>
+    <string name="movie_trailers_title">MOVIE TRAILERS</string>
+    <string name="movie_details_title">DETAILS</string>
+    <string name="movie_reviews_title">USER REVIEWS</string>
+
+    <!--Trailer image-->
+    <string name="trailer_thumbnail">Trailer thumbnail</string>
+    <string name="play_icon">Play icon</string>
 
 
 </resources>

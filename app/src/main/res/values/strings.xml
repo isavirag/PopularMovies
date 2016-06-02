@@ -4,6 +4,10 @@
     <string name="app_name">Popular Movies</string>
     <string name="title_activity_movie_detail">Movie Details</string>
 
+    <!--<Action Bar Items-->
+    <string name="action_favorite">Favorite</string>
+    <string name="action_share">Share</string>
+
     <!--Spinner for sorting-->
     <string name="action_sort">Sort</string>
 

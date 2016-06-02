@@ -10,9 +10,15 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -33,6 +39,7 @@ public class MovieDetailFragment extends Fragment
     private final int FLAG_MOVIE = 6;
     private final String SIZE = "w185";
     private final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
+    final String YOUTUBE_VID_BASE_URL = "http://www.youtube.com/watch";
 
     //Trailers View and adapter members
     private RecyclerView mTrailerView;
@@ -52,8 +59,15 @@ public class MovieDetailFragment extends Fragment
     private TextView mReleaseDateTextView;
     private ImageView mPosterImageView;
     private Button mFavoriteButton;
+    private ShareActionProvider mShareActionProvider;
 
     public MovieDetailFragment() {}
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -154,6 +168,19 @@ public class MovieDetailFragment extends Fragment
         return false;
     }
 
+    public String getFirstTrailer(){
+
+        Uri trailerUri = MovieContract.Trailers.getUriForTrailers(movieId);
+        Cursor c = getContext().getContentResolver().query(trailerUri,
+                new String[] {MovieContract.Trailers.COLUMN_YOUTUBE_TRAILER_ID},
+                MovieContract.Trailers.COLUMN_MOVIE_ID, new String[] {Integer.toString(movieId)}, null);
+
+        if(c!=null && c.moveToFirst()) {
+            return c.getString(c.getColumnIndex(MovieContract.Trailers.COLUMN_YOUTUBE_TRAILER_ID));
+        }
+        return null;
+    }
+
     @Override
     public void onClick(View v) {
         Boolean isFavorite = isFavoriteCheck();
@@ -227,6 +254,47 @@ public class MovieDetailFragment extends Fragment
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.movie_detail_fragment, menu);
+
+        // Retrieve the share menu item
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+
+        // Get the provider and hold onto it to set/change the share intent.
+        mShareActionProvider =
+                (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+        // Attach an intent to this ShareActionProvider.  You can update this at any time,
+        // like when the user selects a new piece of data they might like to share.
+        if (movieId != -1 ) {
+            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+        }
+    }
+
+    private Intent createShareTrailerIntent() {
+
+        Uri youtubeUri;
+
+        if(getFirstTrailer() != null) {
+
+            String youtubeId = getFirstTrailer();
+            //Get first movie trailer link
+            youtubeUri = Uri.parse(YOUTUBE_VID_BASE_URL).buildUpon()
+                    .appendQueryParameter("v", youtubeId)
+                    .build();
+            Log.d("TEST", "createShareTrailerIntent: IM here " + youtubeUri);
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(android.content.Intent.EXTRA_TEXT,
+                    youtubeUri.toString());
+            return shareIntent;
+        }
+        return null;
+    }
+
+    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             //load the general details of the movie
@@ -294,6 +362,11 @@ public class MovieDetailFragment extends Fragment
                     mPosterImageView.setAdjustViewBounds(true);
                     mPosterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     Picasso.with(getContext()).load(builtUri).into(mPosterImageView);
+
+                    // If onCreateOptionsMenu has already happened, we need to update the share intent now.
+                    if (mShareActionProvider != null) {
+                        mShareActionProvider.setShareIntent(createShareTrailerIntent());
+                    }
                 }
                 break;
             case MovieFetchService.FLAG_TRAILERS:

@@ -1,9 +1,10 @@
 package com.example.android.popularmovies;
 
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.widget.Button;
+import android.view.MenuItem;
 
 /**
  * Movie Detail Activity - holds the MovieDetailFragment on phone application.
@@ -19,16 +20,28 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
+
+        ActionBar sb = getSupportActionBar();
+
+        if(sb != null){
+            sb.setDisplayHomeAsUpEnabled(true);
+        }
+
     }
 
-    /**
-     * Returns the button that is used to mark the movie as favorite/not favorite
-     * This needs to be passed into the detail fragment since the button is part of the actionbar
-     *
-     * @return The button indicating the movie as favorite/not favorite
-     */
-    public Button getButton() {
-        return (Button) findViewById(R.id.favorite_button);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        //To return to the right position in the drop down list when the up button is clicked, close
+        // the current movie detail activity (finish) and it will act the same as the back button.
+        //(Default Android action is to create a new instance of the activity which doesn't set the
+        //previously chosen list.
+        switch(item.getItemId()){
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**

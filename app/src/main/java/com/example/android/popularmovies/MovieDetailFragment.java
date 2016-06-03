@@ -1,6 +1,9 @@
 package com.example.android.popularmovies;
 
+import android.content.AsyncQueryHandler;
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,10 +13,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,7 +22,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,11 +29,15 @@ import com.example.android.popularmovies.data.MovieContract;
 import com.example.android.popularmovies.service.MovieFetchService;
 import com.squareup.picasso.Picasso;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Movie Detail Fragment containing the movie detail images, description, trailers and reviews.
  */
-public class MovieDetailFragment extends Fragment
-        implements View.OnClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class MovieDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    public static final int TOKEN_UPDATE_LASTUPDATED = 1;
+    public static final int TOKEN_UPDATE_FAVORITE = 2;
 
     //Constants
     private final int FLAG_MOVIE = 6;
@@ -58,8 +62,9 @@ public class MovieDetailFragment extends Fragment
     private TextView mRatingTextView;
     private TextView mReleaseDateTextView;
     private ImageView mPosterImageView;
-    private Button mFavoriteButton;
-    private ShareActionProvider mShareActionProvider;
+    private MenuItem mFavoriteButton;
+    private Boolean mIsFavorite;
+    private String mFirstTrailer;
 
     public MovieDetailFragment() {}
 
@@ -111,17 +116,11 @@ public class MovieDetailFragment extends Fragment
         //This happens in two-pane mode on larger devices in landscape mode
         else if (this.getArguments() != null && Utility.isScreenLargeAndLandscape(getContext())){
             movieId = this.getArguments().getInt(MovieFetchService.MOVIE_ID_EXTRA, -1);
-            mFavoriteButton = (Button) view.findViewById((R.id.favorite_button));
-            mFavoriteButton.setOnClickListener(this);
             mTitleTextView = (TextView) view.findViewById((R.id.title_textview));
         }
 
         //If movie id is valid, update the database if necessary and initialize loaders.
         if(movieId != -1){
-            if(!isMovieDetailsUpdated(movieId)){
-                Utility.updateDB(getContext(), MovieFetchService.FLAG_TRAILERS, movieId);
-                Utility.updateDB(getContext(), MovieFetchService.FLAG_REVIEWS, movieId);
-            }
             getLoaderManager().initLoader(MovieFetchService.FLAG_TRAILERS, null, this);
             getLoaderManager().initLoader(MovieFetchService.FLAG_REVIEWS, null, this);
             getLoaderManager().initLoader(FLAG_MOVIE, null, this);
@@ -133,155 +132,105 @@ public class MovieDetailFragment extends Fragment
      * from the online API when a user clicks on it from the grid. Therefore, it will not always be
      * up to date when the main lists are updated.
      *
-     * @param movieId the movie id we are checking to see if it's up to date.
-     * @return true if it is up to date, false otherwise.
+     * @param lastUpdated Time when the movie details (reviews and trailers) were last updated.
      */
-    private boolean isMovieDetailsUpdated(int movieId) {
+    private boolean isMovieDetailsUpdated(long lastUpdated) {
 
-        //Make a query to the DB to check when the movie details were last updated
-        Uri movieUri = MovieContract.Movies.getUriForMovie(movieId);
-        Cursor c = getContext().getContentResolver().query(movieUri,
-                new String[] {MovieContract.Movies.COLUMN_LAST_UPDATED},
-                MovieContract.Movies.COLUMN_MOVIE_ID, new String[] {Integer.toString(movieId)}, null);
-
-        if(c!=null && c.moveToFirst()) {
-            long lastUpdated = c.getLong(c.getColumnIndex(MovieContract.Movies.COLUMN_LAST_UPDATED));
             long currentTimeStamp = System.currentTimeMillis();
 
             //If the movie has been fetched before (lastupdated =0) and it hasn't been tuesday since,
             //close the cursor and return true - the movie details are up to date.
-            if (lastUpdated != 0 && Utility.isDatabaseUpToDate(getContext(), lastUpdated)) {
-                c.close();
+            if (lastUpdated != 0 && Utility.isDatabaseUpToDate(lastUpdated)) {
                 return true;
             }
             //Otherwise, update the last_updated value for the movie in the database and return false
             // this will trigger the reviews and trailers to be updated where this method was called.
             else{
+                //Update the "last Updated" field asynchronously through an AsyncQueryHandler
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(MovieContract.Movies.COLUMN_LAST_UPDATED, currentTimeStamp);
-                getContext().getContentResolver().update(MovieContract.Movies
-                        .getUriForMovie(movieId), contentValues, null, null);
-                c.close();
+                MovieQueryHandler queryHandlerUpdateTime = new MovieQueryHandler(getContext(), getContext().getContentResolver());
+                queryHandlerUpdateTime.startUpdate(
+                    TOKEN_UPDATE_LASTUPDATED,
+                    null,
+                    MovieContract.Movies.getUriForMovie(movieId),
+                    contentValues,
+                    null,
+                    null
+                    );
                 return false;
             }
         }
-        return false;
-    }
-
-    public String getFirstTrailer(){
-
-        Uri trailerUri = MovieContract.Trailers.getUriForTrailers(movieId);
-        Cursor c = getContext().getContentResolver().query(trailerUri,
-                new String[] {MovieContract.Trailers.COLUMN_YOUTUBE_TRAILER_ID},
-                MovieContract.Trailers.COLUMN_MOVIE_ID, new String[] {Integer.toString(movieId)}, null);
-
-        if(c!=null && c.moveToFirst()) {
-            return c.getString(c.getColumnIndex(MovieContract.Trailers.COLUMN_YOUTUBE_TRAILER_ID));
-        }
-        return null;
-    }
-
-    @Override
-    public void onClick(View v) {
-        Boolean isFavorite = isFavoriteCheck();
-
-        //If the image is clicked and it was not a favorite before:
-        if(!isFavorite){
-            //set the image to be "favorite"
-            mFavoriteButton.setBackgroundResource(R.drawable.star_button_yellow2);
-            //update db
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(MovieContract.Movies.COLUMN_ISFAVORITE, 1);
-            getContext().getContentResolver().update(MovieContract.Movies.getUriForMovie(movieId), contentValues, null, null);
-        }
-        //Otherwise, if the image is clicked and it was a favorite:
-        else{
-            //revert the image to not be "favorite"
-            mFavoriteButton.setBackgroundResource(R.drawable.plus_button_grey);
-            //update db
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(MovieContract.Movies.COLUMN_ISFAVORITE, 0);
-            getContext().getContentResolver().update(MovieContract.Movies.getUriForMovie(movieId), contentValues, null, null);
-        }
-        //Notify the change to the favorites URI in order for the favorites list grid to be updated.
-        getContext().getContentResolver().notifyChange(MovieContract.Movies.FAVORITES_URI, null);
-    }
-
-    /**
-     * Check if the current movie is checked as favorite in the local database
-     *
-     * @return true if it is a Favorite, false otherwise
-     */
-    private Boolean isFavoriteCheck() {
-        //Build the Uri for the movie and query the movies table with the favorite column as projection.
-        Uri movieUri = MovieContract.Movies.getUriForMovie(movieId);
-        Cursor c = getContext().getContentResolver().query(movieUri,
-                new String[] {MovieContract.Movies.COLUMN_ISFAVORITE},
-                null,
-                null,
-                null);
-
-        //return true (favorite) if the value is 1, false otherwise
-        if(c!=null && c.moveToFirst()) {
-            int isFavorite = c.getInt(c.getColumnIndex(MovieContract.Movies.COLUMN_ISFAVORITE));
-            if (isFavorite == 1) {
-                c.close();
-                return true;
-            }
-            else{
-                c.close();
-                return false;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        //If fragment is showing on a small device (movie_detail_activity is using the fragment, not
-        // the main activity in two pane mode), set the favorite button located on the activity's
-        // actionbar. This can only be done after the Activity is created.
-        if(getFragmentManager().findFragmentByTag(MainActivity.MOVIEDETFRAGTAG) == null) {
-            mFavoriteButton = ((MovieDetailActivity) getActivity()).getButton();
-            Boolean isFavorite = isFavoriteCheck();
-            if (isFavorite) {
-                mFavoriteButton.setBackgroundResource(R.drawable.star_button_yellow2);
-            }
-            mFavoriteButton.setOnClickListener(this);
-        }
-    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.movie_detail_fragment, menu);
 
-        // Retrieve the share menu item
-        MenuItem menuItem = menu.findItem(R.id.action_share);
+        // Retrieve the favorite menu item and set it to the right image
+        mFavoriteButton = menu.findItem(R.id.action_favorite);
 
-        // Get the provider and hold onto it to set/change the share intent.
-        mShareActionProvider =
-                (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-
-        // Attach an intent to this ShareActionProvider.  You can update this at any time,
-        // like when the user selects a new piece of data they might like to share.
-        if (movieId != -1 ) {
-            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+        if(mFavoriteButton != null && mIsFavorite != null) {
+            mFavoriteButton.setIcon(mIsFavorite ? R.drawable.star_button_yellow2 : R.drawable.plus_button_grey);
         }
+
     }
 
-    private Intent createShareTrailerIntent() {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        int favorite;
+
+        switch (id) {
+            case R.id.action_favorite:
+                //If the image is clicked and it was not a favorite before:
+                if(mIsFavorite != null) {
+                    if (!mIsFavorite) {
+                        //set the image to be "favorite"
+                        mFavoriteButton.setIcon(R.drawable.star_button_yellow2);
+                        getActivity().invalidateOptionsMenu();
+                        favorite = 1;
+                    }
+                    //Otherwise, if the image is clicked and it was a favorite:
+                    else {
+                        //revert the image to not be "favorite"
+                        mFavoriteButton.setIcon(R.drawable.plus_button_grey);
+                        getActivity().invalidateOptionsMenu();
+                        favorite = 0;
+                    }
+                    //Update the Favorite field asynchronously through an AsyncQueryHandler
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(MovieContract.Movies.COLUMN_ISFAVORITE, favorite);
+                    MovieQueryHandler queryHandlerUpdateFav = new MovieQueryHandler(
+                            getContext(), getContext().getContentResolver());
+                    queryHandlerUpdateFav.startUpdate(
+                            TOKEN_UPDATE_FAVORITE,
+                            null,
+                            MovieContract.Movies.getUriForMovie(movieId),
+                            contentValues,
+                            null,
+                            null
+                    );
+                }
+                return true;
+            case R.id.action_share:
+                createShareTrailerIntent();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Creates an Intent to share the first movie trailer youtube link with any app
+     * installed on the device that will accept sharing
+     */
+    private void createShareTrailerIntent() {
 
         Uri youtubeUri;
 
-        if(getFirstTrailer() != null) {
-
-            String youtubeId = getFirstTrailer();
-            //Get first movie trailer link
+        if(mFirstTrailer != null) {
             youtubeUri = Uri.parse(YOUTUBE_VID_BASE_URL).buildUpon()
-                    .appendQueryParameter("v", youtubeId)
+                    .appendQueryParameter("v", mFirstTrailer)
                     .build();
             Log.d("TEST", "createShareTrailerIntent: IM here " + youtubeUri);
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -289,9 +238,8 @@ public class MovieDetailFragment extends Fragment
             shareIntent.setType("text/plain");
             shareIntent.putExtra(android.content.Intent.EXTRA_TEXT,
                     youtubeUri.toString());
-            return shareIntent;
+            startActivity(shareIntent);
         }
-        return null;
     }
 
     @Override
@@ -350,8 +298,19 @@ public class MovieDetailFragment extends Fragment
                             data.getString(data.getColumnIndex(MovieContract.Movies.COLUMN_RELEASE_DATE))));
 
                     //Set the favorite indicator image
-                    boolean isFavorite = (data.getInt(data.getColumnIndex(MovieContract.Movies.COLUMN_ISFAVORITE)))== 1;
-                    mFavoriteButton.setBackgroundResource(isFavorite ? R.drawable.star_button_yellow2: R.drawable.plus_button_grey);
+                    mIsFavorite = (data.getInt(data.getColumnIndex(MovieContract.Movies.COLUMN_ISFAVORITE)))== 1;
+
+                    if(mFavoriteButton != null) {
+                        mFavoriteButton.setIcon(mIsFavorite ? R.drawable.star_button_yellow2 : R.drawable.plus_button_grey);
+                    }
+                    getActivity().invalidateOptionsMenu();
+
+                    long lastUpdated = data.getLong(data.getColumnIndex(MovieContract.Movies.COLUMN_LAST_UPDATED));
+
+                    if(!isMovieDetailsUpdated(lastUpdated)) {
+                        Utility.updateDB(getContext(), MovieFetchService.FLAG_TRAILERS, movieId);
+                        Utility.updateDB(getContext(), MovieFetchService.FLAG_REVIEWS, movieId);
+                    }
 
                     //Build the poster  URI and retrieve it using Picasso
                     String posterLoc = data.getString(data.getColumnIndex(MovieContract.Movies.COLUMN_POSTER_PATH));
@@ -362,17 +321,15 @@ public class MovieDetailFragment extends Fragment
                     mPosterImageView.setAdjustViewBounds(true);
                     mPosterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     Picasso.with(getContext()).load(builtUri).into(mPosterImageView);
-
-                    // If onCreateOptionsMenu has already happened, we need to update the share intent now.
-                    if (mShareActionProvider != null) {
-                        mShareActionProvider.setShareIntent(createShareTrailerIntent());
-                    }
                 }
                 break;
             case MovieFetchService.FLAG_TRAILERS:
                 //Replace the null cursor with the new one that contains the trailers data and notify
                 //the adapter so that the new list is visible.
                 mTrailerCursorAdapter.changeCursor(data);
+                if(data.moveToFirst()) {
+                    mFirstTrailer = (data.getString(data.getColumnIndex(MovieContract.Trailers.COLUMN_YOUTUBE_TRAILER_ID)));
+                }
                 mTrailerCursorAdapter.notifyDataSetChanged();
                 break;
             case MovieFetchService.FLAG_REVIEWS:
@@ -386,4 +343,32 @@ public class MovieDetailFragment extends Fragment
 
     @Override
     public void onLoaderReset(Loader loader) {}
+
+    /**
+     * MovieQueryHandler handles any needed database queries that are not handled through the Content
+     * Provider URIs
+     */
+    public static class MovieQueryHandler extends AsyncQueryHandler {
+
+        WeakReference<Context> mContext;
+
+        public MovieQueryHandler(Context context, ContentResolver cr) {
+            super(cr);
+            mContext = new WeakReference<>(context);
+        }
+
+        @Override
+        protected void onUpdateComplete(int token, Object cookie, int result) {
+            switch(token) {
+                //Make sure the Content Resolver is notified of the change after the favorite
+                // field is updated sdo that the favorites list automatically updated.
+                case MovieDetailFragment.TOKEN_UPDATE_FAVORITE:
+                    Context context = mContext.get();
+                    if (context != null) {
+                        context.getContentResolver().notifyChange(MovieContract.Movies.FAVORITES_URI, null);
+                    }
+                    break;
+            }
+        }
+    }
 }

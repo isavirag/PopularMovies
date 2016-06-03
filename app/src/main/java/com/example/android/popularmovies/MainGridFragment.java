@@ -40,7 +40,8 @@ public class MainGridFragment extends Fragment implements LoaderManager.LoaderCa
             MovieContract.Movies.COLUMN_RATING,
             MovieContract.Movies.COLUMN_POPULARITY,
             MovieContract.Movies.COLUMN_ISFAVORITE,
-            MovieContract.Movies.COLUMN_POSTER_PATH
+            MovieContract.Movies.COLUMN_POSTER_PATH,
+            MovieContract.Movies.COLUMN_LAST_UPDATED
     };
 
     //Movie Poster RecyclerView and adapter members
@@ -71,7 +72,7 @@ public class MainGridFragment extends Fragment implements LoaderManager.LoaderCa
 
         //Comment out this if statement when debugging the app on empty database so that it can be populated
         //If the database is not up to date (has been tuesday since the last update)
-        if(!Utility.isDatabaseUpToDate(getContext(), lastUpdate)){
+        if(!Utility.isDatabaseUpToDate(lastUpdate)){
             //Update both lists - In this case we are updating a list, so the movie_id parameter is set
             //-1 (invalid id) so the utility class can check for it.
             Utility.updateDB(getContext(), MovieFetchService.FLAG_POPULAR, -1);
@@ -149,6 +150,12 @@ public class MainGridFragment extends Fragment implements LoaderManager.LoaderCa
         });
     }
 
+    /**
+     * update the UI grid by retrieving the chosen movie list from the database.
+     * Destroy any loaders that may still be working when the user changed the selection.
+     *
+     * @param urlFlag indicates which list has been chosen
+     */
     private void updateGridFromDB(int urlFlag) {
         getLoaderManager().destroyLoader(MovieFetchService.FLAG_FAVORITES);
         getLoaderManager().destroyLoader(MovieFetchService.FLAG_POPULAR);

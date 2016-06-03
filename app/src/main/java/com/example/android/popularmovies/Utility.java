@@ -56,7 +56,7 @@ public class Utility {
      */
     private static boolean isScreenSizeLarge(Context context){
         int screenSize = context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
-        return (screenSize == Configuration.SCREENLAYOUT_SIZE_LARGE);
+        return (screenSize >= Configuration.SCREENLAYOUT_SIZE_LARGE);
     }
 
     /**
@@ -103,10 +103,9 @@ public class Utility {
      * Checks if it is time to update the lists database or the trailers and reviews on a given
      * movie based on the lastUpdated parameter passed in - MovieDB updates their lists every Tuesday.
      *
-     * @param context context of the fragment that is calling the method.
      * @return true if the Database needs to be updated, false otherwise.
      */
-    public static boolean isDatabaseUpToDate(Context context, long lastUpdated) {
+    public static boolean isDatabaseUpToDate(long lastUpdated) {
 
         long currentTimeStamp = System.currentTimeMillis();
         Date curDateTime = new Date(currentTimeStamp);

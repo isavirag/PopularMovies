@@ -285,7 +285,6 @@ public class MovieProvider extends ContentProvider {
         if (context != null) {
             context.getContentResolver().notifyChange(uri, null);
         }
-        db.close();
         return returnUri;
     }
 
@@ -320,7 +319,6 @@ public class MovieProvider extends ContentProvider {
                 context.getContentResolver().notifyChange(uri, null);
             }
         }
-        db.close();
         return rowsUpdated;
     }
 

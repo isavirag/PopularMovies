@@ -32,7 +32,7 @@ public class TrailerCursorAdapter extends CursorRecyclerViewAdapter<TrailerCurso
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         //Constants
-        final String YOUTUBE_VID_BASE_URL = "http://www.youtube.com/watch?v=";
+        final String YOUTUBE_VID_BASE_URL = "http://www.youtube.com/watch";
 
         public ImageView mTrailerImageView;
         public ImageView mPlayIconImageView;
@@ -52,9 +52,15 @@ public class TrailerCursorAdapter extends CursorRecyclerViewAdapter<TrailerCurso
             //If a Trailer Image or play button image is pressed, create an intent to open the video
             //link in the Youtube app or browser.
             Uri builtUri = Uri.parse(YOUTUBE_VID_BASE_URL).buildUpon()
-                    .appendEncodedPath(mYoutubeId)
+                    .appendQueryParameter("v", mYoutubeId)
                     .build();
-            v.getContext().startActivity(new Intent(Intent.ACTION_VIEW, builtUri));
+            Intent sendIntent = new Intent(new Intent(Intent.ACTION_VIEW, builtUri));
+
+            // Verify that the intent will resolve to an activity
+            if (sendIntent.resolveActivity(v.getContext().getPackageManager()) != null) {
+                v.getContext().startActivity(sendIntent);
+            }
+
         }
 
         /**

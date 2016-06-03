@@ -73,16 +73,6 @@
                     android:layout_height="wrap_content"
                     android:padding="@dimen/detail_activity_simple_textview_padding"
                     android:textSize="@dimen/medsmall_textsize"/>
-
-                <Button
-                    android:id="@+id/favorite_button"
-                    android:layout_width="@dimen/favorite_button_side_size"
-                    android:layout_height="@dimen/favorite_button_side_size"
-                    android:layout_gravity="start"
-                    android:layout_marginLeft="@dimen/detail_activity_medium_padding"
-                    android:layout_marginStart="@dimen/detail_activity_medium_padding"
-                    android:layout_marginTop="@dimen/detail_activity_medium_padding"
-                    android:background="@drawable/plus_button_grey"/>
             </LinearLayout>
 
         </LinearLayout>
